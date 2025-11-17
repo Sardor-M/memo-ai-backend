@@ -340,13 +340,6 @@ curl -H "Authorization: Bearer <your-jwt-token>" \
 
 All list endpoints support pagination with 20 items per page by default.
 
-## Documentation
-
-- [Complete Setup Guide](COMPLETE_SETUP_GUIDE.md) - Detailed installation instructions
-- [Supabase Setup](SUPABASE_SETUP.md) - Supabase configuration guide
-- [File Reference](FILE_REFERENCE.md) - Detailed file descriptions
-- [Index](INDEX.md) - Project structure overview
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
