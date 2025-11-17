@@ -4,6 +4,8 @@ Django settings for memo_ai_backend project with Supabase integration.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
+
 
 load_dotenv()
 
@@ -34,7 +36,7 @@ INSTALLED_APPS = [
     
     # Local apps
     'users',
-    'sessions',
+    'sessions.apps.SessionsConfig', 
     'subscriptions',
 ]
 
@@ -69,23 +71,34 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'memo_ai_backend.wsgi.application'
 
-
 # Database - Supabase PostgreSQL
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'postgres'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+# Here we try to use the DATABASE_URL environment variable, 
+# if it's not set, we use the individual database variables.
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+        )
     }
-}
+else:
+    # Fallback to individual database variables
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', os.getenv('SUPABASE_DATABASE_NAME', 'postgres')),
+            'USER': os.getenv('DB_USER', os.getenv('SUPABASE_DATABASE_USER', 'postgres')),
+            'PASSWORD': os.getenv('DB_PASSWORD', os.getenv('SUPABASE_DATABASE_PASSWORD', '')),
+            'HOST': os.getenv('DB_HOST', os.getenv('SUPABASE_DATABASE_HOST', 'localhost')),
+            'PORT': os.getenv('DB_PORT', os.getenv('SUPABASE_DATABASE_PORT', '5432')),
+        }
+    }
 
 # Supabase Configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
-SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY', '')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY', os.getenv('SUPABASE_ANON_KEY', ''))
+SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY', os.getenv('SUPABASE_SERVICE_ROLE_KEY', ''))
 
 
 # Password validation

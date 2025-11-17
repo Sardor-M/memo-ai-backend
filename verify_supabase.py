@@ -5,6 +5,14 @@ Verify Supabase connection and configuration.
 import os
 import sys
 import django
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables before Django setup
+BASE_DIR = Path(__file__).resolve().parent
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    load_dotenv(env_file)
 
 # Setup Django
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -21,21 +29,20 @@ def verify_supabase_client():
     print("Verifying Supabase Client...")
     
     if not settings.SUPABASE_URL:
-        print("SUPABASE_URL not set in environment")
+        print("ERROR: SUPABASE_URL not set in environment")
         return False
     
     if not settings.SUPABASE_KEY:
-        print("SUPABASE_KEY not set in environment")
+        print("ERROR: SUPABASE_KEY not set in environment")
         return False
     
     try:
         supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
-        # Try to get auth user (this will fail if connection is bad)
-        print("Supabase client created successfully")
-        print(f"   URL: {settings.SUPABASE_URL}")
+        print("SUCCESS: Supabase client created successfully")
+        print(f"URL: {settings.SUPABASE_URL}")
         return True
     except Exception as e:
-        print(f"Failed to create Supabase client: {e}")
+        print(f"ERROR: Failed to create Supabase client: {e}")
         return False
 
 
@@ -43,22 +50,32 @@ def verify_database():
     """Verify PostgreSQL database connection."""
     print("\nVerifying Database Connection...")
     
+    db_config = settings.DATABASES['default']
+    print(f"Host: {db_config.get('HOST', 'Not set')}")
+    print(f"Port: {db_config.get('PORT', 'Not set')}")
+    print(f"Database: {db_config.get('NAME', 'Not set')}")
+    print(f"User: {db_config.get('USER', 'Not set')}")
+    
     try:
         conn = connect(
-            host=settings.DATABASES['default']['HOST'],
-            port=settings.DATABASES['default']['PORT'],
-            database=settings.DATABASES['default']['NAME'],
-            user=settings.DATABASES['default']['USER'],
-            password=settings.DATABASES['default']['PASSWORD'],
+            host=db_config.get('HOST', 'localhost'),
+            port=db_config.get('PORT', 5432),
+            database=db_config.get('NAME', 'postgres'),
+            user=db_config.get('USER', 'postgres'),
+            password=db_config.get('PASSWORD', ''),
         )
         conn.close()
-        print("Database connection successful")
+        print("SUCCESS: Database connection successful")
         return True
     except OperationalError as e:
-        print(f"Database connection failed: {e}")
+        print(f"ERROR: Database connection failed: {e}")
+        print("\nTips:")
+        print("- Verify your database host in .env file")
+        print("- Check if you're using the session pooler connection string")
+        print("- Ensure your IP is whitelisted in Supabase dashboard")
         return False
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"ERROR: Unexpected error: {e}")
         return False
 
 
@@ -82,4 +99,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
