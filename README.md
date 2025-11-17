@@ -349,7 +349,7 @@ All list endpoints support pagination with 20 items per page by default.
 
 ## License
 
-MIT License
+This project is licensed under the [MIT License](LICENSE).
 
 ## Support or Contact
 
